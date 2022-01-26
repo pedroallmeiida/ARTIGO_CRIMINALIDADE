@@ -1,3 +1,2 @@
-# ARTIGO DESORGANIZACAO SOCIAL - NORDESTE
-
+Article data on crime in northeastern Brazil
 
