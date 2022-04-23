@@ -21,10 +21,7 @@ setwd("C:/Users/....")
 
 
 ## Datasets
-DADOS_ARTIGO <- read_excel("dados_artigo_02.11.2020.xlsx")
-names(DADOS_ARTIGO)  
-
-DADOS2 <- read_excel("dados_artigo_homicidio_nordeste.xlsx")
+DADOS <- read_excel("dados_artigo_homicidio_nordeste.xlsx")
 
 
 
@@ -34,7 +31,7 @@ class( chi.poly )
 str( slot(chi.poly,"data") )
 names( chi.poly )
 
-chi.poly$chefe_maes_sem_conjuge = DADOS2$`mulher sem conjuge com filho`
+chi.poly$chefe_maes_sem_conjuge = DADOS$`mulher sem conjuge com filho`
 
 
 ind_blau = c()
