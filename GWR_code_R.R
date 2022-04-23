@@ -35,9 +35,6 @@ str( slot(chi.poly,"data") )
 names( chi.poly )
 
 chi.poly$chefe_maes_sem_conjuge = DADOS2$`mulher sem conjuge com filho`
-chi.poly$chefe_pais_sem_conjuge = DADOS2$`homem sem conjuge com filho`
-chi.poly$chefe_pais_solteiros = DADOS2$`família de pais solteiros`
-
 
 
 ind_blau = c()
@@ -61,31 +58,15 @@ Y = chi.poly$tax_hom_10 # response variable
 hist( Y ) # histogram
 
 
-### add variable in dataset
+### add news variables in dataset
 
 chi.poly$preta <- (chi.poly$pop_t_pret/chi.poly$pop_2010)*100
 chi.poly$branca <- (chi.poly$pop_t_bran/chi.poly$pop_2010)*100
 chi.poly$parda <- (chi.poly$pop_t_pard/chi.poly$pop_2010)*100
-chi.poly$jovens <- (chi.poly$po_m_15_24/chi.poly$pop_2010)*100
 chi.poly$indios <- (chi.poly$pop_t_indi/chi.poly$pop_2010)*100
 
-### select variables for correlation
-names(chi.poly) 
-X = chi.poly[,c(3:23,27,32:52)] 
-X = data.frame(X) 
-names(X)
 
-
-### correlation with response variable
-corr=c()
-for(i in 1:dim(X)[2]) corr = c( corr, cor( Y, X[,i] )  )
-
-BD.COR = data.frame(names(X),  corr);  
-ind <- with(BD.COR, order(corr, decreasing = T) )
-Y.COR = BD.COR[ind,];Y.COR 
-
-xlsx::write.xlsx(cor(X), 'correlacao.xlsx')
-
+### Correlation
 
 VAR = data.frame(chi.poly$tax_hom_10,
                  chi.poly$ind_blau, 
@@ -113,9 +94,6 @@ dev.off()
 
 #### OLS  MODELS----
 
-## model stepWise
-step( lm(Y~.,data=X), direction = "backward")
-
 ## M1 ##
 
 model1a = lm(
@@ -137,7 +115,6 @@ lmtest::bptest(model1a,  studentize = F, data = chi.poly)
 
 model2a = lm(formula = tax_hom_10 ~ 
                preta + # percental de pretos
-               #r_m_d_p_c*preta +# renda per capita domicilios x proporcao de pretos
                taxa_desem + # taxa desemprego
                perc_dom_a + # percentual domicilios alugados
                chefe_maes_sem_conjuge
@@ -166,7 +143,6 @@ AIC(model3a)
 model.branco = lm(
   formula = tax_hom_10 ~ 
     branca+
-    #r_m_d_p_c*preta +# renda per capita domicilios x proporcao de pretos
     taxa_desem + # taxa desemprego
     perc_dom_a + # percentual domicilios alugados
     chefe_maes_sem_conjuge
@@ -245,32 +221,14 @@ gwr.map1 <- st_as_sf(gwr.map)
 
 ### FIGURES 
 my.palette2 <- brewer.pal(n = 100, name = "Blues")
-# Rushmore, "Moonrise1","IsleofDogs1"
-#BottleRocket1, BottleRocket2, Rushmore1, Royal1, Royal2, Zissou1, Darjeeling1, Darjeeling2, 
-#Chevalier1 , FantasticFox1 , Moonrise1, Moonrise2, Moonrise3, 
-#Cavalcanti1, GrandBudapest1, GrandBudapest2, IsleofDogs1, IsleofDogs2
-
-my.palette<- wesanderson::wes_palette("Rushmore", 100, type = "continuous")
+my.palette <- wesanderson::wes_palette("Rushmore", 100, type = "continuous")
 
 R2_mod1 <- spplot(gwr.map, "localR2" , col.regions = heat.colors(100, rev = T), at=seq(min(gwr.map$localR2), max(gwr.map$localR2), len=100)  ) 
 map_mod1 <- spplot(gwr.map, "coef_ind_blau_M1" , col.regions= my.palette, at=seq(min(gwr.map$coef_ind_blau_M1), max(gwr.map$coef_ind_blau_M1), len=100)  ) 
 
-      
-
-tiff( "R2_local_M1.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-R2_mod1
-dev.off()
-
-
-tiff( "coef_ind_blau_M1.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-map_mod1
-dev.off()
 
 
 ##### Significance ----
-
 
 
 dfree<-gwr.model1$results$edf
@@ -294,12 +252,6 @@ at=seq(min(chi.poly$ind_blau_M1.t.p), max(chi.poly$ind_blau_M1.t.p), len = 50)
 pvalor_ind_blau_M1 <- spplot(chi.poly, "ind_blau_M1.t.p" , col.regions= paletegreen(50), at=at
                              ,colorkey = list(height = 1, labels = list(at = c(0, 0.05, 0.10, 0.20, 0.40, 0.6, 0.8, 1) ), labels = at)) #seq(0, 1, 0.05)
 
-pvalor_ind_blau_M1
-
-tiff( "pvalor_ind_blau_M1.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-pvalor_ind_blau_M1
-dev.off()
 
 
 #### MODEL 2 -- percental of black people -----
@@ -354,28 +306,6 @@ pvalor_pretas_M2<- spplot(chi.poly, "preta_M2.t.p" , col.regions= paletegreen(50
                              ,colorkey = list(height = 1, labels = list(at = c(0, 0.05, 0.10, 0.20, 0.40, 0.6, 0.8, 1) ), labels = at)) #seq(0, 1, 0.05)
 
 pvalor_pretas_M2
-
-#### Save figures: modelo 2 ---- 
-
-
-
-
-tiff( "R2_local_M2.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-R2_mod2
-dev.off()
-
-
-tiff( "coef_pretas_M2.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-map_mod2
-dev.off()
-
-
-tiff( "pvalor_pretas_M2.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-pvalor_pretas_M2
-dev.off()
 
 
 #### MODEL 3 -- percental of indigenous people -----
@@ -434,32 +364,8 @@ pvalor_indios_M3<- spplot(chi.poly, "indios_M3.t.p" , col.regions= paletegreen(5
 pvalor_indios_M3
 
 
-### Save figures: modelo 3 ----
-
-
-tiff( "R2_local_M3.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-R2_mod3
-dev.off()
-
-
-tiff( "coef_indios_M3.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-map_mod3
-dev.off()
-
-
-tiff( "pvalor_indios_M3.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-pvalor_indios_M3
-dev.off()
-
-
-
-
 
 #### MODEL 4 -- percental of white people -----
-
 
 GWRbandwidth4 <- gwr.sel(reg.eq4,  data=chi.poly, coords=nc.coords,adapt=T) 
 gwr.model4 = gwr(reg.eq4, data=chi.poly, coords=nc.coords, adapt=GWRbandwidth4, hatmatrix=TRUE, se.fit=TRUE) 
@@ -488,16 +394,11 @@ R2_mod4 <- spplot(gwr.map, "localR2" , cuts = 4, col.regions= my.palette )
 map_mod4 <- spplot(gwr.map, "coef_branca_M4", cuts = 4, col.regions= my.palette  )
 
 
-
 R2_mod4 <- spplot(gwr.map, "localR2" , col.regions = heat.colors(100, rev = T), at=seq(min(gwr.map$localR2), max(gwr.map$localR2), len=100)  ) 
 map_mod4 <- spplot(gwr.map, "coef_branca_M4" , col.regions= my.palette, at=seq(min(gwr.map$coef_branca_M4), max(gwr.map$coef_branca_M4), len=100)  ) 
 
 
-
-
-
 ##### Significance ----
-
 
 dfree<-gwr.model4$results$edf
 chi.poly$branca_M4.t <- gwr.model4$SDF$branca/gwr.model4$SDF$branca_se
@@ -519,21 +420,3 @@ at=seq(min(chi.poly$branca_M4.t.p), max(chi.poly$branca_M4.t.p), len = 50)
 pvalor_branca_M4 <- spplot(chi.poly, "branca_M4.t.p" , col.regions= paletegreen(50), at=at
                           ,colorkey = list(height = 1, labels = list(at = c(0, 0.05, 0.10, 0.20, 0.40, 0.6, 0.8, 1) ), labels = at)) #seq(0, 1, 0.05)
 pvalor_branca_M4
-
-
-tiff( "R2_local_M4.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-R2_mod4
-dev.off()
-
-
-tiff( "coef_branca_M4.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-map_mod4
-dev.off()
-
-
-tiff( "pvalor_branca_M4.tiff",  width = 20, height = 20, 
-      units = "cm",pointsize = 12, "lzw",res = 300 )
-pvalor_branca_M4
-dev.off()
